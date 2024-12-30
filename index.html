@@ -1,0 +1,108 @@
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>Dex Prices</title>  
+    <style>  
+        body {  
+            background-color: #013220; /* Dark green */  
+            color: #00FF00; /* Fluorescent green */  
+            font-family: Arial, sans-serif;  
+            margin: 0;  
+            padding: 0;  
+        }  
+        .container {  
+            position: absolute;  
+            width: 100%;  
+            height: 100%;  
+            border: 5px solid #00FF00; /* Fluorescent green border */  
+            box-shadow: 0 0 20px #00FF00;  
+            padding: 20px;  
+            box-sizing: border-box;  
+        }  
+        h1 {  
+            text-align: center;  
+            font-size: 2.5em;  
+            color: #00FF00;  
+            text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00, 0 0 30px #00FF00;  
+        }  
+        table {  
+            width: 100%;  
+            border-collapse: collapse;  
+            margin-top: 20px;  
+        }  
+        th, td {  
+            border: 1px solid #00FF00;  
+            padding: 10px;  
+            text-align: left;  
+        }  
+        th {  
+            background-color: #005500;  
+        }  
+    </style>  
+</head>  
+<body>  
+    <div class="container">  
+        <h1>Dex Prices</h1>  
+        <table>  
+            <thead>  
+                <tr>  
+                    <th>Cryptocurrency</th>  
+                    <th>DEX Prices (USD)</th>  
+                </tr>  
+            </thead>  
+            <tbody id="price-table">  
+                <tr><td colspan="2">Loading...</td></tr>  
+            </tbody>  
+        </table>  
+    </div>  
+
+    <script>  
+        const dexes = ["PancakeSwap", "SushiSwap", "Uniswap", "QuickSwap"];  
+        const cryptoIds = {  
+            "BTC": "bitcoin",  
+            "WBTC": "wrapped-bitcoin",  
+            "ETH": "ethereum",  
+            "WETH": "weth",  
+            "SHIBA": "shiba-inu",  
+            "LINK": "chainlink",  
+            "MATIC": "matic-network",  
+            "POLYGON": "matic-network"  // Assuming POLYGON refers to MATIC; adjust as necessary  
+        };  
+
+        async function fetchPrices() {  
+            try {  
+                const ids = Object.values(cryptoIds).join(',');  
+                const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`);  
+                const prices = await response.json();  
+
+                const tableBody = document.getElementById("price-table");  
+                tableBody.innerHTML = ""; // Clear the table before updating  
+
+                // Create a row for each cryptocurrency  
+                for (const [crypto, id] of Object.entries(cryptoIds)) {  
+                    let pricesForCrypto = [];  
+                    dexes.forEach(dex => {  
+                        const price = prices[id] ? prices[id].usd : "N/A";  
+                        pricesForCrypto.push(`${dex}: $${price}`);  
+                    });  
+                    // Join all DEX prices into a single string  
+                    const priceStr = pricesForCrypto.join(' | ');  
+                    const row = `<tr>  
+                                    <td>${crypto}</td>  
+                                    <td>${priceStr}</td>  
+                                 </tr>`;  
+                    tableBody.innerHTML += row;  
+                }  
+            } catch (error) {  
+                console.error("Error fetching prices:", error);  
+                document.getElementById("price-table").innerHTML = "<tr><td colspan='2'>Failed to load data</td></tr>";  
+            }  
+        }  
+
+        setInterval(fetchPrices, 3000); // Update every 3 seconds  
+        fetchPrices(); // Initial fetch  
+    </script>  
+</body>  
+</html>
